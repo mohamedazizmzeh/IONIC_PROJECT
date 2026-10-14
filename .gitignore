@@ -42,3 +42,5 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.swp
+# Git history backup — do not push
+/movie-match-git-backup/
