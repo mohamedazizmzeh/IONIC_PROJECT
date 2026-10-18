@@ -1,13 +1,37 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>register</ion-title>
-  </ion-toolbar>
-</ion-header>
-
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">register</ion-title>
-    </ion-toolbar>
-  </ion-header>
-</ion-content>
+<ion-content class="auth-page"><div class="auth-layout"><aside class="cinema-panel">
+  <a class="brand" routerLink="/login" aria-label="Movie Match, accueil"><span class="brand-mark" aria-hidden="true">▶</span><span>movie match<span class="brand-dot">.</span></span></a>
+  <div class="cinema-story">
+    <div class="eyebrow">Le cinéma, ça se partage</div>
+    <h2>Un bon film.<br>Une belle<br><em>rencontre.</em></h2>
+    <p>Retrouve tes films préférés et les personnes qui les aiment autant que toi.</p>
+    <div class="ticket-stack" aria-hidden="true">
+      <div class="cinema-ticket back"><div class="ticket-top"><span>MOVIE MATCH</span><span>02</span></div><div class="ticket-title">Même passion.</div><div class="ticket-bottom"><span>UNE HISTOIRE À PARTAGER</span><span>ADMIT ONE</span></div></div>
+      <div class="cinema-ticket"><div class="ticket-top"><span>MOVIE MATCH</span><span>01</span></div><div class="ticket-title">Même séance.</div><div class="ticket-bottom"><span>LE DÉBUT D’UNE BELLE HISTOIRE</span><span>ADMIT ONE</span></div></div>
+      <div class="ticket-seal">✳</div>
+    </div>
+  </div>
+  <div class="cinema-footer"><span>DES FILMS. DES AFFINITÉS. DES RENCONTRES.</span><span>EST. 2026</span></div>
+</aside>
+    <main class="auth-panel"><a class="brand mobile-brand" routerLink="/login"><span class="brand-mark" aria-hidden="true">▶</span><span>movie match<span class="brand-dot">.</span></span></a>
+    <div class="auth-topline">Déjà dans la salle ? <a routerLink="/login">Connecte-toi ↗</a></div>
+<form class="auth-form register-form" (ngSubmit)="onRegister()">
+  <div class="eyebrow">Bienvenue dans la salle</div><h1>Ta place t’attend.</h1>
+  <p class="auth-description">Crée ton profil et trouve tes affinités cinéma.</p>
+  <div class="field-row">
+    <label class="field">Prénom<input name="firstName" [(ngModel)]="firstName" autocomplete="given-name" placeholder="Ton prénom" required></label>
+    <label class="field">Nom<input name="lastName" [(ngModel)]="lastName" autocomplete="family-name" placeholder="Ton nom" required></label>
+  </div>
+  <label class="field">Âge<input name="age" [(ngModel)]="age" type="number" placeholder="Ton âge" required></label>
+  <label class="field">Adresse email<input name="email" [(ngModel)]="email" type="email" autocomplete="email" placeholder="toi@exemple.com" required></label>
+  <label class="field">Mot de passe<input name="password" [(ngModel)]="password" type="password" autocomplete="new-password" placeholder="Choisis un mot de passe" required></label>
+  <div class="photo-picker">
+    @if (photo) { <img [src]="photo" alt="Aperçu de ta photo de profil"> }
+    <label for="photoInput">Ta photo de profil<input id="photoInput" type="file" accept="image/*" capture="user" (change)="onFileSelected($event)" required></label>
+  </div>
+  @if (error) { <p class="form-error" role="alert">{{ error }}</p> }
+  <button class="auth-submit" type="submit" [disabled]="loading" [attr.aria-busy]="loading">
+    @if (loading) { <ion-spinner name="crescent" aria-label="Inscription en cours"></ion-spinner> }
+    @else { <span>Créer mon compte</span><span aria-hidden="true">↗</span> }
+  </button>
+</form>
+    <footer class="auth-footer">Collectionne les films. Partage la passion.</footer></main></div></ion-content>

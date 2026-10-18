@@ -8,14 +8,14 @@ import { AuthService } from '../../../core/services/auth.service';
   standalone: true,
   imports: [IonContent, IonAvatar, IonBadge, IonList, IonItem, IonLabel],
   template: `
-  <ion-content class="ion-padding">
+  <ion-content class="ion-padding"><div class="profile-wrap">
     @if (user()) {
       <div style="text-align: center; margin-bottom: 24px;">
         <ion-avatar style="width: 120px; height: 120px; margin: 0 auto 16px;">
           <img [src]="user()!.photo" alt="photo" />
         </ion-avatar>
         <h2 style="margin: 0;">{{ user()!.firstName }} {{ user()!.lastName }}</h2>
-        <p style="color: #666; margin: 4px 0;">{{ user()!.age }} ans • {{ user()!.email }}</p>
+        <p style="color: var(--mm-muted); margin: 4px 0;">{{ user()!.age }} ans • {{ user()!.email }}</p>
         <ion-badge [color]="user()!.role === 'admin' ? 'danger' : 'primary'">
           {{ user()!.role }}
         </ion-badge>
@@ -42,16 +42,17 @@ import { AuthService } from '../../../core/services/auth.service';
     } @else {
       <p style="text-align: center;">Chargement...</p>
     }
-  </ion-content>
+  </div></ion-content>
   `,
   styles: [`
+    .profile-wrap { max-width: 560px; margin: 48px auto; padding: 32px 24px; background: #fffefa; border: 1px solid var(--mm-border); border-radius: 12px; }
     .btn-admin {
       display: flex;
       align-items: center;
       justify-content: center;
       width: 100%;
       padding: 14px;
-      background: #ffc409;
+      background: #ebe8dc;
       color: #000;
       border: none;
       border-radius: 8px;
@@ -70,7 +71,7 @@ import { AuthService } from '../../../core/services/auth.service';
       justify-content: center;
       width: 100%;
       padding: 14px;
-      background: #eb445a;
+      background: var(--mm-accent);
       color: white;
       border: none;
       border-radius: 8px;

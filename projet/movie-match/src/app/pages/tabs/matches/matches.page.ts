@@ -16,7 +16,7 @@ import { MatchService, MatchResult } from '../../../core/services/match.service'
   <ion-header>
     <ion-toolbar>
       <ion-title>👥 Mes matchs</ion-title>
-      <div slot="end" style="margin-right: 12px; font-size: 12px; color: #666;">
+      <div slot="end" style="margin-right: 12px; font-size: 12px; color: var(--mm-muted);">
         Seuil ≥ {{ threshold }}%
       </div>
     </ion-toolbar>
@@ -45,7 +45,7 @@ import { MatchService, MatchResult } from '../../../core/services/match.service'
       </ion-text>
     } @else {
       <div style="padding: 12px;">
-        <p style="text-align: center; color: #666; font-size: 13px;">
+        <p style="text-align: center; color: var(--mm-muted); font-size: 13px;">
           {{ matches().length }} utilisateur(s) partagent tes goûts 🎬
         </p>
 
@@ -84,9 +84,9 @@ import { MatchService, MatchResult } from '../../../core/services/match.service'
       align-items: center;
       gap: 12px;
       padding: 12px;
-      background: #fff;
+      background: #fffefa;
       border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      border: 1px solid var(--mm-border);
       margin-bottom: 12px;
     }
     .match-info { flex: 1; }
@@ -97,7 +97,7 @@ import { MatchService, MatchResult } from '../../../core/services/match.service'
     }
     .match-detail {
       font-size: 12px;
-      color: #666;
+      color: var(--mm-muted);
       margin-bottom: 6px;
     }
     .match-progress {
@@ -109,7 +109,7 @@ import { MatchService, MatchResult } from '../../../core/services/match.service'
     }
     .match-progress-bar {
       height: 100%;
-      background: linear-gradient(90deg, #3880ff, #2dd36f);
+      background: var(--mm-accent);
       border-radius: 3px;
       transition: width 0.5s ease;
     }

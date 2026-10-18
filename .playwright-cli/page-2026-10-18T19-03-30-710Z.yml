@@ -1,0 +1,39 @@
+- main [ref=f1e31]:
+  - main [ref=f1e35]:
+    - link "movie match." [ref=f1e36] [cursor=pointer]:
+      - /url: /login
+      - generic [aria-hidden] [ref=f1e37]: ▶
+    - generic [ref=f1e39]:
+      - text: Déjà dans la salle ?
+      - link "Connecte-toi ↗" [ref=f1e40] [cursor=pointer]:
+        - /url: /login
+    - generic [ref=f1e41]:
+      - generic [ref=f1e42]: Bienvenue dans la salle
+      - heading "Ta place t’attend." [level=1] [ref=f1e43]
+      - paragraph [ref=f1e44]: Crée ton profil et trouve tes affinités cinéma.
+      - generic [ref=f1e45]:
+        - generic [ref=f1e46]:
+          - text: Prénom
+          - textbox "Prénom" [ref=f1e47]:
+            - /placeholder: Ton prénom
+        - generic [ref=f1e48]:
+          - text: Nom
+          - textbox "Nom" [ref=f1e49]:
+            - /placeholder: Ton nom
+      - generic [ref=f1e50]:
+        - text: Âge
+        - spinbutton "Âge" [ref=f1e51]
+      - generic [ref=f1e52]:
+        - text: Adresse email
+        - textbox "Adresse email" [ref=f1e53]:
+          - /placeholder: toi@exemple.com
+      - generic [ref=f1e54]:
+        - text: Mot de passe
+        - textbox "Mot de passe" [ref=f1e55]:
+          - /placeholder: Choisis un mot de passe
+      - generic [ref=f1e57]:
+        - text: Ta photo de profil
+        - button "Ta photo de profil" [ref=f1e58]
+      - button "Créer mon compte" [ref=f1e59] [cursor=pointer]:
+        - generic [aria-hidden] [ref=f1e61]: ↗
+    - generic [ref=f1e62]: Collectionne les films. Partage la passion.

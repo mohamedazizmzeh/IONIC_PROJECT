@@ -18,22 +18,24 @@ import { MovieService } from '../../../core/services/movie.service';
   template: `
   <ion-header>
     <ion-toolbar>
-      <ion-title>🎬 Films</ion-title>
+      <ion-title>À l’affiche</ion-title>
     </ion-toolbar>
 
     <!-- Toggle Populaires / Catalogue -->
     <div class="tabs">
       <button
         class="tab"
+        [attr.aria-pressed]="activeTab() === 'popular'"
         [class.active]="activeTab() === 'popular'"
         (click)="switchTab('popular')">
-        🔥 Populaires
+        Populaires
       </button>
       <button
         class="tab"
         [class.active]="activeTab() === 'catalog'"
+        [attr.aria-pressed]="activeTab() === 'catalog'"
         (click)="switchTab('catalog')">
-        ⭐ Catalogue
+        Le catalogue
         @if (catalogCount() > 0) {
           <span class="count">{{ catalogCount() }}</span>
         }
@@ -46,6 +48,7 @@ import { MovieService } from '../../../core/services/movie.service';
         <ion-searchbar
           [value]="query()"
           (ionChange)="onSearch($event)"
+          aria-label="Rechercher un film"
           placeholder="Rechercher un film..."
           debounce="600">
         </ion-searchbar>
@@ -53,7 +56,7 @@ import { MovieService } from '../../../core/services/movie.service';
     }
   </ion-header>
 
-  <ion-content>
+  <ion-content><div class="page-intro"><h1>Trouve ton prochain coup de cœur.</h1><p>Explore les films du moment et garde ceux qui te ressemblent.</p></div>
     @if (loading()) {
       <div class="loader">
         <ion-spinner name="crescent"></ion-spinner>
@@ -90,9 +93,11 @@ import { MovieService } from '../../../core/services/movie.service';
               }
               <button
                 class="fav-btn"
+                [attr.aria-label]="(isFavorite(movie.id) ? 'Retirer des favoris : ' : 'Ajouter aux favoris : ') + movie.title"
+                [attr.aria-pressed]="isFavorite(movie.id)"
                 [class.active]="isFavorite(movie.id)"
                 (click)="toggleFavorite(movie, $event)">
-                {{ isFavorite(movie.id) ? '❤️' : '🤍' }}
+                {{ isFavorite(movie.id) ? '♥' : '♡' }}
               </button>
             </div>
             <div class="movie-info">
@@ -110,144 +115,7 @@ import { MovieService } from '../../../core/services/movie.service';
     }
   </ion-content>
   `,
-  styles: [`
-    /* Onglets */
-    .tabs {
-      display: flex;
-      background: #f4f5f8;
-      border-bottom: 1px solid #e0e0e0;
-    }
-    .tab {
-      flex: 1;
-      padding: 12px 8px;
-      background: none;
-      border: none;
-      border-bottom: 3px solid transparent;
-      font-size: 14px;
-      font-weight: 600;
-      color: #666;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-    .tab.active {
-      color: #3880ff;
-      border-bottom-color: #3880ff;
-      background: #fff;
-    }
-    .count {
-      background: #3880ff;
-      color: white;
-      border-radius: 10px;
-      padding: 1px 7px;
-      font-size: 11px;
-    }
-
-    /* Loader */
-    .loader {
-      text-align: center;
-      padding: 40px;
-    }
-
-    /* Grille films */
-    .movies-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-      padding: 12px;
-    }
-    .movie-card {
-      border-radius: 8px;
-      overflow: hidden;
-      background: #fff;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    .poster-wrapper {
-      position: relative;
-      width: 100%;
-      padding-bottom: 150%;
-      background: #f0f0f0;
-      overflow: hidden;
-    }
-    .poster-wrapper img {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-    .no-poster {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 48px;
-      color: #ccc;
-    }
-    .fav-btn {
-      position: absolute;
-      top: 6px; right: 6px;
-      width: 32px; height: 32px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.9);
-      border: none;
-      font-size: 16px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
-      padding: 0;
-      z-index: 2;
-    }
-    .fav-btn.active { background: #fff; }
-    .movie-info { padding: 8px; }
-    .movie-title {
-      font-weight: 600;
-      font-size: 12px;
-      line-height: 1.2;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      min-height: 30px;
-    }
-    .movie-meta {
-      font-size: 11px;
-      color: #666;
-      margin-top: 4px;
-    }
-
-    /* Empty state */
-    .empty-state {
-      text-align: center;
-      padding: 60px 20px;
-      color: #999;
-    }
-    .empty-state .empty-icon {
-      font-size: 60px;
-      margin-bottom: 12px;
-    }
-    .empty-state .hint {
-      font-size: 13px;
-      color: #bbb;
-      margin-top: 8px;
-    }
-
-    /* Grands écrans */
-    @media (min-width: 768px) {
-      .movies-grid { grid-template-columns: repeat(3, 1fr); }
-    }
-    @media (min-width: 1200px) {
-      .movies-grid { grid-template-columns: repeat(4, 1fr); }
-    }
-  `]
+  styleUrls: ['./home.page.scss']
 })
 export class HomePage implements OnInit {
   tmdb = inject(TmdbService);

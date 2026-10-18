@@ -1,3 +1,5 @@
+@use "./theme/auth";
+
 /*
  * App Global CSS
  * ----------------------------------------------------------------------------
@@ -34,4 +36,14 @@
 
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
-@import '@ionic/angular/css/palettes/dark.system.css';
+
+* { box-sizing: border-box; }
+button, a, input { -webkit-tap-highlight-color: transparent; }
+button:focus-visible, a:focus-visible, input[type=file]:focus-visible { outline: 3px solid var(--mm-accent); outline-offset: 4px; }
+ion-header { box-shadow: none !important; border-bottom: 1px solid var(--mm-border); }
+ion-toolbar { --min-height: 72px; --border-width: 0; }
+ion-title { font-family: Georgia, serif; font-size: 27px; font-weight: 400; letter-spacing: -.6px; }
+ion-searchbar { --background: #fffefa; --box-shadow: none; --border-radius: 8px; --color: var(--mm-ink); --placeholder-color: var(--mm-muted); padding: 8px 24px 20px !important; }
+ion-item { --border-color: var(--mm-border); }
+ion-badge { border-radius: 5px; padding: 6px 10px; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; } }

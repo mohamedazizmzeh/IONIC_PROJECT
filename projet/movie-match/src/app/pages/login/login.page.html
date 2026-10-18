@@ -1,13 +1,31 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>login</ion-title>
-  </ion-toolbar>
-</ion-header>
-
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">login</ion-title>
-    </ion-toolbar>
-  </ion-header>
-</ion-content>
+<ion-content class="auth-page"><div class="auth-layout"><aside class="cinema-panel">
+  <a class="brand" routerLink="/login" aria-label="Movie Match, accueil"><span class="brand-mark" aria-hidden="true">▶</span><span>movie match<span class="brand-dot">.</span></span></a>
+  <div class="cinema-story">
+    <div class="eyebrow">Le cinéma, ça se partage</div>
+    <h2>Un bon film.<br>Une belle<br><em>rencontre.</em></h2>
+    <p>Retrouve tes films préférés et les personnes qui les aiment autant que toi.</p>
+    <div class="ticket-stack" aria-hidden="true">
+      <div class="cinema-ticket back"><div class="ticket-top"><span>MOVIE MATCH</span><span>02</span></div><div class="ticket-title">Même passion.</div><div class="ticket-bottom"><span>UNE HISTOIRE À PARTAGER</span><span>ADMIT ONE</span></div></div>
+      <div class="cinema-ticket"><div class="ticket-top"><span>MOVIE MATCH</span><span>01</span></div><div class="ticket-title">Même séance.</div><div class="ticket-bottom"><span>LE DÉBUT D’UNE BELLE HISTOIRE</span><span>ADMIT ONE</span></div></div>
+      <div class="ticket-seal">✳</div>
+    </div>
+  </div>
+  <div class="cinema-footer"><span>DES FILMS. DES AFFINITÉS. DES RENCONTRES.</span><span>EST. 2026</span></div>
+</aside>
+    <main class="auth-panel"><a class="brand mobile-brand" routerLink="/login"><span class="brand-mark" aria-hidden="true">▶</span><span>movie match<span class="brand-dot">.</span></span></a>
+    <div class="auth-topline">Pas encore de compte ? <a routerLink="/register">Rejoins-nous ↗</a></div>
+<form class="auth-form" (ngSubmit)="onLogin()">
+  <div class="eyebrow">Ton prochain coup de cœur</div>
+  <h1>Content de te revoir.</h1>
+  <p class="auth-description">Tes films, tes favoris et de belles affinités.<br>La suite de l’histoire commence ici.</p>
+  <label class="field">Adresse email<input name="email" [(ngModel)]="email" type="email" autocomplete="email" placeholder="toi@exemple.com" required></label>
+  <label class="field">Mot de passe<input name="password" [(ngModel)]="password" type="password" autocomplete="current-password" placeholder="Ton mot de passe" required></label>
+  @if (error) { <p class="form-error" role="alert">{{ error }}</p> }
+  <button class="auth-submit" type="submit" [disabled]="loading" [attr.aria-busy]="loading">
+    @if (loading) { <ion-spinner name="crescent" aria-label="Connexion en cours"></ion-spinner> }
+    @else { <span>Se connecter</span><span aria-hidden="true">↗</span> }
+  </button>
+  <div class="auth-note">Le cinéma nous rapproche</div>
+  <p class="auth-bottom">Une nouvelle histoire ? <a routerLink="/register">Créer mon compte</a></p>
+</form>
+    <footer class="auth-footer">Un espace pour les amoureux du cinéma.<br>À chaque film, de nouvelles affinités.</footer></main></div></ion-content>

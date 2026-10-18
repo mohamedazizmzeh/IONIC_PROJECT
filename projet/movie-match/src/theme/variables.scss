@@ -1,2 +1,21 @@
 // For information on how to create your own theme, please refer to:
 // https://ionicframework.com/docs/theming/
+
+:root {
+  --mm-background: #f8f6f0;
+  --mm-ink: #22342d;
+  --mm-muted: #6e746c;
+  --mm-border: #dedfd4;
+  --mm-accent: #ae462a;
+  --ion-font-family: 'Segoe UI', Arial, sans-serif;
+  --ion-background-color: var(--mm-background);
+  --ion-text-color: var(--mm-ink);
+  --ion-color-primary: #ae462a;
+  --ion-color-primary-rgb: 174, 70, 42;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-shade: #993e25;
+  --ion-color-primary-tint: #b6583f;
+  --ion-color-medium: #6e746c;
+  --ion-toolbar-background: var(--mm-background);
+  --ion-item-background: #fffefa;
+}
