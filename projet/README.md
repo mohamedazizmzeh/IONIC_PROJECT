@@ -16,7 +16,7 @@ L'API utilise **MongoDB Atlas** pour stocker les utilisateurs et le catalogue de
 - ✅ Ajout / suppression de films dans les favoris
 - ✅ Gestion du catalogue de films par les administrateurs
 - ✅ Activation / désactivation des comptes (sans suppression)
-- ✅ **Matching entre utilisateurs** via l'**indice de Jaccard** (seuil ≥ 75%)
+- ✅ **Matching entre utilisateurs** via l'**indice de Jaccard** (seuil strictement > 75%)
 
 ---
 
@@ -154,9 +154,9 @@ Les routes ci-dessous sont relatives à leur préfixe. Ex : `/register` → `/ap
 
 | Méthode | Route | Accès | Description |
 |---|---|---|---|
-| GET | `/?threshold=75` | Utilisateur connecté | Trouver les utilisateurs avec un score ≥ seuil |
+| GET | `/?threshold=75` | Utilisateur connecté | Trouver les utilisateurs avec un score strictement supérieur au seuil |
 
-Le paramètre `threshold` définit le score minimum (défaut : **75**).
+Le paramètre `threshold` définit un seuil exclusif (défaut : **75**, minimum autorisé : **75**). Le filtre utilise le score exact, avant tout arrondi d'affichage.
 
 ---
 
@@ -181,10 +181,10 @@ Utilisateur B : [Spider, Pinocchio, Resident Evil]
 
 |A ∩ B| = 3
 |A ∪ B| = 3
-Score = (3 / 3) × 100 = 100%  ✅ (≥ 75%)
+Score = (3 / 3) × 100 = 100%  ✅ (> 75%)
 ```
 
-**Exemple 2 — Limite du seuil :**
+**Exemple 2 — Égalité au seuil, rejetée :**
 
 ```text
 Utilisateur A : [Spider, Pinocchio, Resident Evil, After]
@@ -192,7 +192,7 @@ Utilisateur B : [Spider, Pinocchio, Resident Evil]
 
 |A ∩ B| = 3
 |A ∪ B| = 4
-Score = (3 / 4) × 100 = 75%  ✅ (limite atteinte)
+Score = (3 / 4) × 100 = 75%  ❌ (seuil non dépassé)
 ```
 
 **Exemple 3 — Rejeté :**

@@ -16,7 +16,7 @@ Le frontend communique avec :
 - ✅ Connexion / déconnexion avec **JWT**
 - ✅ Consultation et **recherche de films** via TMDB
 - ✅ Gestion d'une **playlist de favoris**
-- ✅ **Matching** avec les utilisateurs ayant ≥ 75% de films en commun
+- ✅ **Matching** avec les utilisateurs ayant strictement > 75% de correspondance entre favoris
 - ✅ **Profil** utilisateur avec photo, âge, rôle
 - ✅ **Espace admin** : ajout de films + activation/désactivation de comptes
 - ✅ **Toggle Populaires / Catalogue** dans la page d'accueil
@@ -54,7 +54,7 @@ movie-match/
             ├── tabs/                   # Barre de navigation custom
             │   ├── home/               # Films TMDB + Catalogue admin
             │   ├── favorites/          # Mes favoris
-            │   ├── matches/            # Matching (≥ 75%)
+            │   ├── matches/            # Matching (> 75%)
             │   └── profile/            # Profil + logout
             └── admin/                  # Espace admin (2 onglets)
 ```
@@ -140,7 +140,7 @@ export const environment = {
 | `/register` | Inscription | Public |
 | `/tabs/home` | Films + Catalogue | Authentifié |
 | `/tabs/favorites` | Mes favoris | Authentifié |
-| `/tabs/matches` | Matching (≥ 75%) | Authentifié |
+| `/tabs/matches` | Matching (> 75%) | Authentifié |
 | `/tabs/profile` | Profil | Authentifié |
 | `/admin` | Espace admin | Authentifié + Admin |
 
@@ -293,7 +293,7 @@ Nécessite **macOS + Xcode**. Impossible de builder depuis Windows/Linux.
 | Tabs (barre custom) | ✅ |
 | Home (Populaires + Catalogue) | ✅ |
 | Favoris | ✅ |
-| Matchs (≥ 75%) | ✅ |
+| Matchs (> 75%) | ✅ |
 | Profil + Logout | ✅ |
 | Admin (2 onglets) | ✅ |
 | Guards (auth + admin) | ✅ |

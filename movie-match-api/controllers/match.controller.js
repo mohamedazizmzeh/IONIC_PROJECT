@@ -10,7 +10,7 @@ function jaccard(a, b) {
 }
 
 exports.findMatches = async (req, res) => {
-  const threshold = Number(req.query.threshold) || 75;
+  const threshold = Math.max(75, Number(req.query.threshold) || 75);
   const me = req.user;
 
   console.log('=== 🔍 MATCHING DEBUG ===');
@@ -38,11 +38,11 @@ exports.findMatches = async (req, res) => {
           photo: u.photo,
           age: u.age,
         },
-        score: Math.round(score),
+        score,
         common,
       };
     })
-    .filter(m => m.score >= threshold)
+    .filter(m => m.score > threshold)
     .sort((a, b) => b.score - a.score);
 
   console.log('✅ Matchs retenus:', results.length);

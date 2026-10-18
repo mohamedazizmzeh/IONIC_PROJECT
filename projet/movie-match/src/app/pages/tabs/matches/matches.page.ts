@@ -17,7 +17,7 @@ import { MatchService, MatchResult } from '../../../core/services/match.service'
     <ion-toolbar>
       <ion-title>👥 Mes matchs</ion-title>
       <div slot="end" style="margin-right: 12px; font-size: 12px; color: var(--mm-muted);">
-        Seuil ≥ {{ threshold }}%
+        Seuil &gt; {{ threshold }}%
       </div>
     </ion-toolbar>
   </ion-header>
@@ -36,7 +36,7 @@ import { MatchService, MatchResult } from '../../../core/services/match.service'
             Aucun match trouvé pour l'instant.
           </p>
           <p style="font-size: 14px;">
-            Il faut au moins <strong>{{ threshold }}%</strong> de films en commun avec un autre utilisateur.
+            Le taux de correspondance doit dépasser <strong>{{ threshold }}%</strong> avec un autre utilisateur.
           </p>
           <p style="font-size: 14px;">
             Ajoute plus de films à tes favoris pour augmenter tes chances !
@@ -70,7 +70,7 @@ import { MatchService, MatchResult } from '../../../core/services/match.service'
             <ion-badge
               [color]="match.score >= 90 ? 'success' : 'primary'"
               class="match-score">
-              {{ match.score }}%
+              {{ match.score.toFixed(2) }}%
             </ion-badge>
           </div>
         }

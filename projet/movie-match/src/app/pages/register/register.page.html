@@ -26,10 +26,22 @@
   <label class="field">Mot de passe<input name="password" [(ngModel)]="password" type="password" autocomplete="new-password" placeholder="Choisis un mot de passe" required></label>
   <div class="photo-picker">
     @if (photo) { <img [src]="photo" alt="Aperçu de ta photo de profil"> }
-    <label for="photoInput">Ta photo de profil<input id="photoInput" type="file" accept="image/*" capture="user" (change)="onFileSelected($event)" required></label>
+    <div><p class="photo-label">Ta photo de profil</p>
+      <button class="camera-button" type="button" (click)="openCamera()" [disabled]="openingCamera || cameraOpen || loading">
+        {{ openingCamera ? 'Ouverture de la caméra…' : (photo ? 'Reprendre la photo' : 'Prendre une photo') }}
+      </button>
+      <p class="photo-hint">Une photo prise avec ta caméra est obligatoire.</p>
+    </div>
   </div>
+  <section class="camera-capture" [hidden]="!cameraOpen" aria-label="Prise de photo">
+    <video #cameraPreview autoplay muted playsinline aria-label="Aperçu de la caméra"></video>
+    <div class="camera-actions">
+      <button type="button" class="camera-button" (click)="capturePhoto()" [disabled]="openingCamera">Capturer la photo</button>
+      <button type="button" class="camera-button camera-cancel" (click)="closeCamera()">Annuler</button>
+    </div>
+  </section>
   @if (error) { <p class="form-error" role="alert">{{ error }}</p> }
-  <button class="auth-submit" type="submit" [disabled]="loading" [attr.aria-busy]="loading">
+  <button class="auth-submit" type="submit" [disabled]="loading || cameraOpen || openingCamera" [attr.aria-busy]="loading">
     @if (loading) { <ion-spinner name="crescent" aria-label="Inscription en cours"></ion-spinner> }
     @else { <span>Créer mon compte</span><span aria-hidden="true">↗</span> }
   </button>
