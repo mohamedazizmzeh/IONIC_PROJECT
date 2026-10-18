@@ -1,13 +1,41 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>home</ion-title>
-  </ion-toolbar>
+<ion-header>
+  <ion-toolbar><ion-title>À l’affiche</ion-title></ion-toolbar>
+  <div class="tabs">
+    <button type="button" class="tab" [attr.aria-pressed]="activeTab() === 'popular'"
+      [class.active]="activeTab() === 'popular'" (click)="switchTab('popular')">Populaires</button>
+    <button type="button" class="tab" [attr.aria-pressed]="activeTab() === 'catalog'"
+      [class.active]="activeTab() === 'catalog'" (click)="switchTab('catalog')">Le catalogue
+      @if (catalogCount() > 0) { <span class="count">{{ catalogCount() }}</span> }
+    </button>
+  </div>
+  @if (activeTab() === 'popular') {
+    <ion-toolbar><ion-searchbar [value]="query()" (ionInput)="onSearch($event)"
+      aria-label="Rechercher un film" placeholder="Rechercher un film..." debounce="300"></ion-searchbar></ion-toolbar>
+  }
 </ion-header>
-
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">home</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content>
+  <div class="page-intro"><h1>Fais ton cinéma.</h1><p>À gauche, tu passes. À droite, le coup de cœur.</p></div>
+  @if (error()) {
+    <div class="request-error" role="alert"><p>{{ error() }}</p><button type="button" (click)="retry()">Réessayer</button></div>
+  }
+  @if (loading()) {
+    <div class="loader" role="status"><ion-spinner name="crescent"></ion-spinner><p>Chargement des affiches…</p></div>
+  } @else if (!error() && movies().length === 0) {
+    <ion-text color="medium"><div class="empty-state">
+      @if (activeTab() === 'catalog') {
+        <p>Catalogue vide</p><p class="hint">Aucun film n’a encore été ajouté par l’administrateur.</p>
+      } @else if (query()) { <p>Aucun résultat pour « {{ query() }} ».</p> }
+      @else { <p>Aucun film disponible.</p> }
+    </div></ion-text>
+  } @else if (movies().length > 0) {
+    <app-movie-swipe [movie]="currentMovie()"
+      [poster]="tmdb.poster(currentMovie()?.poster_path ?? '')"
+      [nextPoster]="tmdb.poster(nextMovie()?.poster_path ?? '')"
+      [progress]="(currentMovie() ? deckIndex() + 1 : movies().length) + ' / ' + movies().length"
+      [favorite]="currentMovie() ? isFavorite(currentMovie()!.id) : false"
+      [busy]="saving() || (currentMovie() ? pendingFavorites().has(currentMovie()!.id) : false)"
+      [canRewind]="canRewind()" (selected)="decide($event)" (undo)="rewind()" (restart)="restartDeck()">
+    </app-movie-swipe>
+  }
+  <span class="sr-only" role="status" aria-live="polite">{{ announcement() }}</span>
 </ion-content>

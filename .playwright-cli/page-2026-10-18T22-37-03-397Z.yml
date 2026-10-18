@@ -1,0 +1,59 @@
+- main [ref=f5e5]:
+  - generic [ref=f5e8]:
+    - complementary [ref=f5e9]:
+      - link "Movie Match, accueil" [ref=f5e10] [cursor=pointer]:
+        - /url: /login
+        - generic [aria-hidden] [ref=f5e11]: ▶
+        - generic [ref=f5e12]: movie match.
+      - generic [ref=f5e13]:
+        - generic [ref=f5e14]: Le cinéma, ça se partage
+        - heading [level=2] [ref=f5e15]:
+          - text: Un bon film.Une belle
+          - emphasis [ref=f5e16]: rencontre.
+        - paragraph [ref=f5e17]: Retrouve tes films préférés et les personnes qui les aiment autant que toi.
+        - generic [aria-hidden] [ref=f5e18]:
+          - generic [ref=f5e19]:
+            - generic [ref=f5e20]:
+              - generic [ref=f5e21]: MOVIE MATCH
+              - generic [ref=f5e22]: "02"
+            - generic [ref=f5e23]: Même passion.
+            - generic [ref=f5e24]:
+              - generic [ref=f5e25]: UNE HISTOIRE À PARTAGER
+              - generic [ref=f5e26]: ADMIT ONE
+          - generic [ref=f5e27]:
+            - generic [ref=f5e28]:
+              - generic [ref=f5e29]: MOVIE MATCH
+              - generic [ref=f5e30]: "01"
+            - generic [ref=f5e31]: Même séance.
+            - generic [ref=f5e32]:
+              - generic [ref=f5e33]: LE DÉBUT D’UNE BELLE HISTOIRE
+              - generic [ref=f5e34]: ADMIT ONE
+          - generic [ref=f5e35]: ✳
+      - generic [ref=f5e36]:
+        - generic [ref=f5e37]: DES FILMS. DES AFFINITÉS. DES RENCONTRES.
+        - generic [ref=f5e38]: EST. 2026
+    - main [ref=f5e39]:
+      - generic [ref=f5e40]:
+        - text: Pas encore de compte ?
+        - link "Rejoins-nous ↗" [ref=f5e41] [cursor=pointer]:
+          - /url: /register
+      - generic [ref=f5e42]:
+        - generic [ref=f5e43]: Ton prochain coup de cœur
+        - heading "Content de te revoir." [level=1] [ref=f5e44]
+        - paragraph [ref=f5e45]: Tes films, tes favoris et de belles affinités.La suite de l’histoire commence ici.
+        - generic [ref=f5e46]:
+          - text: Adresse email
+          - textbox "Adresse email" [ref=f5e47]:
+            - /placeholder: toi@exemple.com
+        - generic [ref=f5e48]:
+          - text: Mot de passe
+          - textbox "Mot de passe" [ref=f5e49]:
+            - /placeholder: Ton mot de passe
+        - button "Se connecter" [ref=f5e50] [cursor=pointer]:
+          - generic [aria-hidden] [ref=f5e52]: ↗
+        - generic [ref=f5e53]: Le cinéma nous rapproche
+        - paragraph [ref=f5e54]:
+          - text: Une nouvelle histoire ?
+          - link "Créer mon compte" [ref=f5e55] [cursor=pointer]:
+            - /url: /register
+      - generic [ref=f5e56]: Un espace pour les amoureux du cinéma.À chaque film, de nouvelles affinités.

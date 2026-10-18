@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatchesPage } from './matches.page';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { MatchService } from '../../../core/services/match.service';
 
 describe('MatchesPage', () => {
@@ -18,6 +18,14 @@ describe('MatchesPage', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('shows a server failure instead of claiming there are no matches', () => {
+    vi.spyOn(TestBed.inject(MatchService), 'findMatches').mockReturnValue(throwError(() => new Error('Offline')));
+    component.loadMatches();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('[role=alert]')).not.toBeNull();
+    expect(fixture.nativeElement.textContent).not.toContain('Aucun match trouvé');
   });
 
   it('explains that the threshold must be exceeded', () => {

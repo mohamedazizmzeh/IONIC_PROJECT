@@ -1,134 +1,54 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, computed, inject, signal } from '@angular/core';
+import { Observable, Subscription, map } from 'rxjs';
 import {
   IonHeader, IonToolbar, IonTitle, IonContent, IonSearchbar,
   IonSpinner, IonText
 } from '@ionic/angular';
-import { TmdbService } from '../../../core/services/tmdb.service';
+import { TmdbService, TmdbMovie } from '../../../core/services/tmdb.service';
 import { UserService } from '../../../core/services/user.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { MovieService } from '../../../core/services/movie.service';
+import { MovieSwipeComponent } from './movie-swipe.component';
+
+interface SwipeChoice { index: number; movieId: number; addedFavorite: boolean }
 
 @Component({
   selector: 'app-home',
   standalone: true,
   imports: [
     IonHeader, IonToolbar, IonTitle, IonContent,
-    IonSearchbar, IonSpinner, IonText
+    IonSearchbar, IonSpinner, IonText, MovieSwipeComponent
   ],
-  template: `
-  <ion-header>
-    <ion-toolbar>
-      <ion-title>À l’affiche</ion-title>
-    </ion-toolbar>
-
-    <!-- Toggle Populaires / Catalogue -->
-    <div class="tabs">
-      <button
-        class="tab"
-        [attr.aria-pressed]="activeTab() === 'popular'"
-        [class.active]="activeTab() === 'popular'"
-        (click)="switchTab('popular')">
-        Populaires
-      </button>
-      <button
-        class="tab"
-        [class.active]="activeTab() === 'catalog'"
-        [attr.aria-pressed]="activeTab() === 'catalog'"
-        (click)="switchTab('catalog')">
-        Le catalogue
-        @if (catalogCount() > 0) {
-          <span class="count">{{ catalogCount() }}</span>
-        }
-      </button>
-    </div>
-
-    <!-- Barre de recherche (visible uniquement dans Populaires) -->
-    @if (activeTab() === 'popular') {
-      <ion-toolbar>
-        <ion-searchbar
-          [value]="query()"
-          (ionChange)="onSearch($event)"
-          aria-label="Rechercher un film"
-          placeholder="Rechercher un film..."
-          debounce="600">
-        </ion-searchbar>
-      </ion-toolbar>
-    }
-  </ion-header>
-
-  <ion-content><div class="page-intro"><h1>Trouve ton prochain coup de cœur.</h1><p>Explore les films du moment et garde ceux qui te ressemblent.</p></div>
-    @if (loading()) {
-      <div class="loader">
-        <ion-spinner name="crescent"></ion-spinner>
-        <p>Chargement...</p>
-      </div>
-    } @else if (movies().length === 0) {
-      <ion-text color="medium">
-        <div class="empty-state">
-          @if (activeTab() === 'catalog') {
-            <div class="empty-icon">📭</div>
-            <p>Catalogue vide</p>
-            <p class="hint">Aucun film n'a encore été ajouté par l'administrateur.</p>
-          } @else if (query()) {
-            <div class="empty-icon">🔍</div>
-            <p>Aucun résultat pour "{{ query() }}"</p>
-          } @else {
-            <div class="empty-icon">🎬</div>
-            <p>Aucun film disponible</p>
-          }
-        </div>
-      </ion-text>
-    } @else {
-      <div class="movies-grid">
-        @for (movie of movies(); track movie.id) {
-          <div class="movie-card">
-            <div class="poster-wrapper">
-              <div class="no-poster">🎬</div>
-              @if (movie.poster_path) {
-                <img
-                  [src]="tmdb.poster(movie.poster_path)"
-                  [alt]="movie.title"
-                  loading="lazy"
-                  decoding="async" />
-              }
-              <button
-                class="fav-btn"
-                [attr.aria-label]="(isFavorite(movie.id) ? 'Retirer des favoris : ' : 'Ajouter aux favoris : ') + movie.title"
-                [attr.aria-pressed]="isFavorite(movie.id)"
-                [class.active]="isFavorite(movie.id)"
-                (click)="toggleFavorite(movie, $event)">
-                {{ isFavorite(movie.id) ? '♥' : '♡' }}
-              </button>
-            </div>
-            <div class="movie-info">
-              <div class="movie-title">{{ movie.title }}</div>
-              <div class="movie-meta">
-                ⭐ {{ movie.vote_average?.toFixed(1) ?? 'N/A' }}
-                @if (movie.release_date) {
-                  • {{ movie.release_date.substring(0, 4) }}
-                }
-              </div>
-            </div>
-          </div>
-        }
-      </div>
-    }
-  </ion-content>
-  `,
+  templateUrl: './home.page.html',
   styleUrls: ['./home.page.scss']
 })
-export class HomePage implements OnInit {
+export class HomePage implements OnInit, OnDestroy {
   tmdb = inject(TmdbService);
   private users = inject(UserService);
+  pendingFavorites = this.users.pendingFavorites;
   private auth = inject(AuthService);
   private movieSrv = inject(MovieService);
 
   // État
   activeTab = signal<'popular' | 'catalog'>('popular');
-  movies = signal<any[]>([]);
+  movies = signal<TmdbMovie[]>([]);
   loading = signal(false);
   query = signal('');
   catalogCount = signal(0);
+  error = signal('');
+  deckIndex = signal(0);
+  saving = signal(false);
+  announcement = signal('');
+  currentMovie = computed<TmdbMovie | undefined>(() => this.movies()[this.deckIndex()]);
+  nextMovie = computed<TmdbMovie | undefined>(() => this.movies()[this.deckIndex() + 1]);
+  private history = signal<SwipeChoice[]>([]);
+  private deckVersion = 0;
+  canRewind = computed(() => {
+    const last = this.history().at(-1);
+    return !!last && !this.saving() && !this.loading() && !this.pendingFavorites().has(last.movieId);
+  });
+  private movieRequest?: Subscription;
+  private countRequest?: Subscription;
 
   ngOnInit() {
     this.loadPopular();
@@ -137,64 +57,68 @@ export class HomePage implements OnInit {
 
   // ============ POPULAIRES (TMDB) ============
   loadPopular() {
+    this.loadMovies(this.tmdb.getPopular());
+  }
+
+  private loadMovies(source: Observable<TmdbMovie[]>) {
+    this.movieRequest?.unsubscribe();
+    this.resetDeck();
+    this.movies.set([]);
     this.loading.set(true);
-    this.tmdb.getPopular().subscribe({
+    this.error.set('');
+    this.movieRequest = source.subscribe({
       next: (movies) => {
         this.movies.set(movies);
         this.loading.set(false);
       },
-      error: () => this.loading.set(false)
+      error: () => {
+        this.error.set('Les films sont temporairement indisponibles. Vérifie ta connexion et réessaie.');
+        this.loading.set(false);
+      }
     });
   }
 
   onSearch(event: any) {
+    if (this.activeTab() !== 'popular') return;
     const q = (event.detail?.value ?? '').trim();
     this.query.set(q);
 
-    if (!q) {
+    if (q.length < 2) {
       this.loadPopular();
       return;
     }
-    if (q.length < 2) return;
-
-    this.loading.set(true);
-    this.tmdb.search(q).subscribe({
-      next: (movies) => {
-        this.movies.set(movies);
-        this.loading.set(false);
-      },
-      error: () => this.loading.set(false)
-    });
+    this.loadMovies(this.tmdb.search(q));
   }
 
   // ============ CATALOGUE (Admin) ============
   loadCatalogCount() {
-    this.movieSrv.list().subscribe({
-      next: (list) => this.catalogCount.set(list.length)
+    this.countRequest = this.movieSrv.list().subscribe({
+      next: (list) => this.catalogCount.set(list.length),
+      error: () => this.catalogCount.set(0)
     });
   }
 
   loadCatalog() {
-    this.loading.set(true);
-    this.movieSrv.list().subscribe({
-      next: (movies) => {
-        // Convertir le format backend → format TMDB
-        const formatted = movies.map(m => ({
+    this.loadMovies(this.movieSrv.list().pipe(
+      map(movies => movies.map(m => ({
           id: m.tmdbId,
           title: m.title,
           poster_path: m.posterPath,
           vote_average: m.voteAverage,
           release_date: m.releaseDate,
           overview: m.overview,
-        }));
-        this.movies.set(formatted);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.movies.set([]);
-        this.loading.set(false);
-      }
-    });
+      })))
+    ));
+  }
+
+  retry() {
+    if (this.activeTab() === 'catalog') this.loadCatalog();
+    else this.onSearch({ detail: { value: this.query() } });
+  }
+
+  ngOnDestroy() {
+    this.movieRequest?.unsubscribe();
+    this.countRequest?.unsubscribe();
   }
 
   switchTab(tab: 'popular' | 'catalog') {
@@ -215,24 +139,70 @@ export class HomePage implements OnInit {
     return !!user && user.favorites.includes(id);
   }
 
-  toggleFavorite(movie: any, event?: Event) {
-    if (event) event.stopPropagation();
-
-    const user = this.auth.currentUser();
-    if (!user) return;
-
-    const add = !user.favorites.includes(movie.id);
-    const request$ = add
-      ? this.users.addFavorite(movie.id)
-      : this.users.removeFavorite(movie.id);
-
-    request$.subscribe({
-      next: (res: any) => {
-        const updated = { ...user, favorites: res.favorites };
-        localStorage.setItem('user', JSON.stringify(updated));
-        this.auth.currentUser.set(updated);
-      },
-      error: (err) => console.error('Erreur favori:', err)
+  decide(direction: 'like' | 'pass') {
+    const movie = this.currentMovie();
+    if (!movie || this.loading() || this.saving() || this.pendingFavorites().has(movie.id)) return;
+    if (direction === 'like' && !this.auth.currentUser()) {
+      this.error.set('Connecte-toi pour enregistrer tes favoris.');
+      return;
+    }
+    const entry: SwipeChoice = {
+      index: this.deckIndex(), movieId: movie.id,
+      addedFavorite: direction === 'like' && !this.isFavorite(movie.id)
+    };
+    this.error.set('');
+    this.history.update(history => [...history, entry]);
+    this.deckIndex.update(index => index + 1);
+    this.announcement.set(direction === 'like' ? `${movie.title} ajouté aux favoris.` : `${movie.title} passé.`);
+    if (!entry.addedFavorite) return;
+    const version = this.deckVersion;
+    this.saving.set(true);
+    this.users.addFavorite(movie.id).subscribe({
+      complete: () => this.saving.set(false),
+      error: () => {
+        if (version === this.deckVersion) {
+          this.history.update(history => history.filter(choice => choice !== entry));
+          this.deckIndex.set(entry.index);
+          this.error.set('Le favori n’a pas pu être enregistré. Le film est revenu pour réessayer.');
+          this.announcement.set('Favori non enregistré.');
+        }
+        this.saving.set(false);
+      }
     });
+  }
+
+  rewind() {
+    if (!this.canRewind()) return;
+    const entry = this.history().at(-1)!;
+    this.history.update(history => history.slice(0, -1));
+    this.deckIndex.set(entry.index);
+    this.error.set('');
+    this.announcement.set('Dernier choix annulé.');
+    if (!entry.addedFavorite) return;
+    const version = this.deckVersion;
+    this.saving.set(true);
+    this.users.removeFavorite(entry.movieId).subscribe({
+      complete: () => this.saving.set(false),
+      error: () => {
+        if (version === this.deckVersion) {
+          this.history.update(history => [...history, entry]);
+          this.deckIndex.set(entry.index + 1);
+          this.error.set('Impossible d’annuler ce favori. Réessaie avec le bouton retour.');
+        }
+        this.saving.set(false);
+      }
+    });
+  }
+
+  restartDeck() {
+    if (this.saving()) return;
+    this.resetDeck();
+  }
+
+  private resetDeck() {
+    ++this.deckVersion;
+    this.deckIndex.set(0);
+    this.history.set([]);
+    this.announcement.set('');
   }
 }

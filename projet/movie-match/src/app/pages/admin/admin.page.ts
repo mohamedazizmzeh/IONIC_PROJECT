@@ -1,4 +1,6 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Subscription } from 'rxjs';
 import {
   IonHeader, IonToolbar, IonTitle, IonContent, IonSpinner,
   IonAvatar, IonBadge, IonButtons, IonBackButton,
@@ -45,6 +47,9 @@ import { AppUser } from '../../core/models/user.model';
   </ion-header>
 
   <ion-content class="ion-padding">
+    @if (error()) {
+      <div class="request-error" role="alert"><p>{{ error() }}</p><button type="button" (click)="retry()">Réessayer</button></div>
+    }
 
     <!-- ==================== ONGLET FILMS ==================== -->
     @if (activeTab() === 'movies') {
@@ -57,9 +62,9 @@ import { AppUser } from '../../core/models/user.model';
 
       <ion-searchbar
         [value]="searchQuery()"
-        (ionChange)="onSearch($event)"
+        (ionInput)="onSearch($event)"
         placeholder="Chercher un film..."
-        debounce="600">
+        debounce="300">
       </ion-searchbar>
 
       @if (searching()) {
@@ -386,10 +391,13 @@ import { AppUser } from '../../core/models/user.model';
     }
   `]
 })
-export class AdminPage implements OnInit {
+export class AdminPage implements OnInit, OnDestroy {
   tmdb = inject(TmdbService);
   private movies = inject(MovieService);
   private usersSrv = inject(UserService);
+  private destroyRef = inject(DestroyRef);
+  private searchRequest?: Subscription;
+  error = signal('');
 
   // Onglet actif
   activeTab = signal<'movies' | 'users'>('movies');
@@ -411,36 +419,41 @@ export class AdminPage implements OnInit {
 
   loadUsers() {
     this.loadingUsers.set(true);
-    this.usersSrv.list().subscribe({
+    this.usersSrv.list().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (list) => {
         this.users.set(list);
         this.loadingUsers.set(false);
       },
-      error: (err) => {
-        console.error('Erreur users:', err);
+      error: () => {
+        this.error.set('La liste des utilisateurs est temporairement indisponible.');
         this.loadingUsers.set(false);
       }
     });
   }
 
   loadAddedMovies() {
-    this.movies.list().subscribe({
-      next: (list) => this.addedIds.set(list.map(m => m.tmdbId))
+    this.movies.list().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (list) => this.addedIds.set(list.map(m => m.tmdbId)),
+      error: () => this.error.set('Le catalogue est temporairement indisponible. Réessaie dans quelques instants.')
     });
   }
 
   onSearch(event: any) {
+    this.searchRequest?.unsubscribe();
     const q = (event.detail?.value ?? '').trim();
     this.searchQuery.set(q);
-    if (q.length < 2) { this.searchResults.set([]); return; }
+    if (q.length < 2) { this.searchResults.set([]); this.searching.set(false); return; }
 
     this.searching.set(true);
-    this.tmdb.search(q).subscribe({
+    this.searchRequest = this.tmdb.search(q).subscribe({
       next: (res) => {
         this.searchResults.set(res.slice(0, 10));
         this.searching.set(false);
       },
-      error: () => this.searching.set(false)
+      error: () => {
+        this.error.set('La recherche est temporairement indisponible. Réessaie.');
+        this.searching.set(false);
+      }
     });
   }
 
@@ -456,7 +469,7 @@ export class AdminPage implements OnInit {
       next: () => {
         this.addedIds.update(list => [...list, movie.id]);
       },
-      error: (err) => alert('Erreur : ' + (err.error?.message ?? 'Inconnu'))
+      error: (err) => this.error.set(err.error?.message ?? 'Le film n’a pas pu être ajouté. Réessaie.')
     });
   }
 
@@ -470,7 +483,16 @@ export class AdminPage implements OnInit {
           list.map(u => u.id === user.id ? { ...u, active: res.active } : u)
         );
       },
-      error: (err) => console.error('Erreur toggle:', err)
+      error: () => this.error.set('Le compte n’a pas pu être modifié. Réessaie.')
     });
   }
+
+  retry() {
+    this.error.set('');
+    this.loadUsers();
+    this.loadAddedMovies();
+    if (this.searchQuery().length >= 2) this.onSearch({ detail: { value: this.searchQuery() } });
+  }
+
+  ngOnDestroy() { this.searchRequest?.unsubscribe(); }
 }

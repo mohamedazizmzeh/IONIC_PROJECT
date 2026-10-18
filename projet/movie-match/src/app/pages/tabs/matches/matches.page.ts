@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
+import { Subscription } from 'rxjs';
 import {
   IonHeader, IonToolbar, IonTitle, IonContent, IonSpinner,
   IonText, IonAvatar, IonBadge
@@ -23,12 +24,15 @@ import { MatchService, MatchResult } from '../../../core/services/match.service'
   </ion-header>
 
   <ion-content>
+    @if (error()) {
+      <div class="request-error" role="alert"><p>{{ error() }}</p><button type="button" (click)="loadMatches()">Réessayer</button></div>
+    }
     @if (loading()) {
       <div style="text-align: center; padding: 40px;">
         <ion-spinner name="crescent"></ion-spinner>
         <p>Recherche de matchs...</p>
       </div>
-    } @else if (matches().length === 0) {
+    } @else if (!error() && matches().length === 0) {
       <ion-text color="medium">
         <div style="text-align: center; padding: 60px 20px;">
           <div style="font-size: 60px;">🎯</div>
@@ -119,30 +123,35 @@ import { MatchService, MatchResult } from '../../../core/services/match.service'
     }
   `]
 })
-export class MatchesPage implements OnInit {
+export class MatchesPage implements OnInit, OnDestroy {
   private matchService = inject(MatchService);
 
   // ✅ Signals
   matches = signal<MatchResult[]>([]);
   loading = signal(true);
   threshold = 75;
+  error = signal('');
+  private request?: Subscription;
 
   ngOnInit() {
     this.loadMatches();
   }
 
   loadMatches() {
+    this.request?.unsubscribe();
+    this.error.set('');
     this.loading.set(true);
-    this.matchService.findMatches(this.threshold).subscribe({
+    this.request = this.matchService.findMatches(this.threshold).subscribe({
       next: (results) => {
-        console.log('Matchs reçus:', results);
         this.matches.set(results);
         this.loading.set(false);
       },
-      error: (err) => {
-        console.error('Erreur matchs:', err);
+      error: () => {
+        this.error.set('Les matchs sont temporairement indisponibles. Réessaie dans quelques instants.');
         this.loading.set(false);
       }
     });
   }
+
+  ngOnDestroy() { this.request?.unsubscribe(); }
 }

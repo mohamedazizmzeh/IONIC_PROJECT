@@ -1,7 +1,18 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { map, of, tap } from 'rxjs';
+import { Observable, catchError, map, shareReplay, throwError, timeout } from 'rxjs';
 import { environment } from '../../../environments/environment';
+
+export interface TmdbMovie {
+  id: number;
+  title: string;
+  poster_path?: string | null;
+  release_date?: string;
+  vote_average?: number;
+  overview?: string;
+}
+
+interface CachedRequest<T> { expires: number; request: Observable<T> }
 
 @Injectable({ providedIn: 'root' })
 export class TmdbService {
@@ -9,41 +20,49 @@ export class TmdbService {
   private base = environment.tmdb.baseUrl;
   private key = environment.tmdb.apiKey;
 
-  // ✅ CACHE persistant (survit aux changements d'onglet)
-  private popularCache: any[] | null = null;
-  private searchCache = new Map<string, any[]>();
+  private lists = new Map<string, CachedRequest<TmdbMovie[]>>();
+  private details = new Map<string, CachedRequest<TmdbMovie>>();
 
   getPopular() {
-    // Si déjà en cache → retour immédiat
-    if (this.popularCache) {
-      return of(this.popularCache);
-    }
-    return this.http.get<any>(`${this.base}/movie/popular`, {
-      params: { api_key: this.key, language: 'fr-FR' }
-    }).pipe(
-      map(r => r.results),
-      tap(results => this.popularCache = results)
+    return this.cached(this.lists, 'popular', () =>
+      this.http.get<{ results: TmdbMovie[] }>(`${this.base}/movie/popular`, {
+        params: { api_key: this.key, language: 'fr-FR' }
+      }).pipe(map(response => response.results))
     );
   }
 
   search(query: string) {
-    const key = query.toLowerCase().trim();
-    // Si déjà en cache → retour immédiat
-    if (this.searchCache.has(key)) {
-      return of(this.searchCache.get(key)!);
-    }
-    return this.http.get<any>(`${this.base}/search/movie`, {
-      params: { api_key: this.key, query, language: 'fr-FR' }
-    }).pipe(
-      map(r => r.results),
-      tap(results => this.searchCache.set(key, results))
+    const key = query.trim().toLowerCase();
+    return this.cached(this.lists, `search:${key}`, () =>
+      this.http.get<{ results: TmdbMovie[] }>(`${this.base}/search/movie`, {
+        params: { api_key: this.key, query: query.trim(), language: 'fr-FR' }
+      }).pipe(map(response => response.results))
     );
   }
 
   getById(id: number) {
-    return this.http.get<any>(`${this.base}/movie/${id}`, {
-      params: { api_key: this.key, language: 'fr-FR' }
-    });
+    return this.cached(this.details, String(id), () =>
+      this.http.get<TmdbMovie>(`${this.base}/movie/${id}`, {
+        params: { api_key: this.key, language: 'fr-FR' }
+      })
+    );
+  }
+
+  private cached<T>(cache: Map<string, CachedRequest<T>>, key: string, load: () => Observable<T>): Observable<T> {
+    const existing = cache.get(key);
+    if (existing && existing.expires > Date.now()) return existing.request;
+    const request = load().pipe(
+      timeout(10000),
+      catchError(error => {
+        if (cache.get(key)?.request === request) cache.delete(key);
+        return throwError(() => error);
+      }),
+      shareReplay({ bufferSize: 1, refCount: true })
+    );
+    cache.delete(key);
+    cache.set(key, { expires: Date.now() + 10 * 60 * 1000, request });
+    if (cache.size > 100) cache.delete(cache.keys().next().value!);
+    return request;
   }
 
   poster(path: string): string {

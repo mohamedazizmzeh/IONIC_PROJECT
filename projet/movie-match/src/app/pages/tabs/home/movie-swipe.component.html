@@ -1,0 +1,61 @@
+<section class="swipe-discovery" aria-label="Découvrir les films">
+  <div class="deck-column">
+    <div class="deck-topline"><span>TA SÉANCE DÉCOUVERTE</span><span>{{ progress() }}</span></div>
+    <div class="card-stack">
+      @if (movie(); as film) {
+        <div class="back-card" aria-hidden="true">
+          @if (nextPoster()) { <img [src]="nextPoster()" alt="" decoding="async"> }
+        </div>
+        @for (card of [film]; track card.id) {
+          <article class="swipe-card" [class.dragging]="dragging()" [attr.aria-label]="card.title"
+            [style.transform]="'translateX(' + dragX() + 'px) rotate(' + dragX() / 18 + 'deg)'"
+            (pointerdown)="pointerDown($event)" (pointermove)="pointerMove($event)"
+            (pointerup)="pointerUp($event)" (pointercancel)="cancelDrag()" (lostpointercapture)="cancelDrag()">
+            @if (poster() && !imageUnavailable()) {
+              <img class="film-poster" [src]="poster()" [alt]="'Affiche de ' + card.title" draggable="false"
+                decoding="async" fetchpriority="high" (error)="imageUnavailable.set(true)">
+            } @else {
+              <div class="poster-placeholder" aria-hidden="true">
+                <svg viewBox="0 0 64 64" fill="none"><rect x="12" y="6" width="40" height="52" rx="4"/><path d="M22 6v52M42 6v52M12 18h10m-10 14h10m-10 14h10m20-28h10M42 32h10M42 46h10"/></svg>
+                <span>LE CINÉMA NOUS RAPPROCHE</span>
+              </div>
+            }
+            <span class="swipe-stamp stamp-like" [style.opacity]="dragX() > 0 ? dragX() / 100 : 0" aria-hidden="true">J’AIME</span>
+            <span class="swipe-stamp stamp-pass" [style.opacity]="dragX() < 0 ? -dragX() / 100 : 0" aria-hidden="true">JE PASSE</span>
+            <div class="film-caption">
+              @if (favorite()) { <span class="saved-label">♥ Déjà dans tes favoris</span> }
+              <h2>{{ card.title }}</h2>
+              <div class="film-meta">
+                @if (card.vote_average) { <span class="rating">★ {{ card.vote_average.toFixed(1) }}</span> }
+                @if (card.release_date) { <span>{{ card.release_date.substring(0, 4) }}</span> }
+                <span>À découvrir</span>
+              </div>
+            </div>
+          </article>
+        }
+      } @else {
+        <div class="deck-finished" role="status">
+          <span class="finished-mark" aria-hidden="true">✓</span><h2>Fin de séance.</h2>
+          <p>Tu as découvert tous les films de cette sélection. Reviens sur ton dernier choix ou explore une autre recherche.</p>
+          <button type="button" class="restart-button" [disabled]="busy()" (click)="restart.emit()">Revoir la sélection</button>
+        </div>
+      }
+    </div>
+    <div class="swipe-actions" aria-label="Choisir ce film">
+      <div class="action"><button type="button" class="rewind" aria-label="Annuler le dernier choix" title="Annuler le dernier choix"
+        [disabled]="!canRewind() || busy()" (click)="undo.emit()"><svg viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 9M3 4v6h6"/></svg></button><span>Retour</span></div>
+      <div class="action"><button type="button" class="pass" aria-label="Passer ce film" title="Passer ce film"
+        [disabled]="!movie() || busy()" (click)="select('pass')"><svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg></button><span>Passer</span></div>
+      <div class="action"><button type="button" class="like" aria-label="Aimer ce film" title="Ajouter aux favoris"
+        [disabled]="!movie() || busy()" (click)="select('like')"><svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/></svg></button><span>J’aime</span></div>
+    </div>
+    <p class="gesture-hint" role="status">{{ busy() ? 'Enregistrement en cours…' : '← Glisse pour passer · Glisse pour aimer →' }}</p>
+  </div>
+  <aside class="discovery-note">
+    <span class="note-eyebrow">AU FEELING, TOUT SIMPLEMENT</span>
+    <h2>Une affiche.<br>Un coup de <em>cœur.</em></h2>
+    <p>Le prochain film que tu aimeras est peut-être juste là. Fais défiler les affiches et compose ta collection.</p>
+    @if (movie()?.overview) { <div class="film-synopsis"><h3>Dans ce film</h3><p>{{ movie()!.overview }}</p></div> }
+    <div class="discovery-tip"><span aria-hidden="true">↶</span><p>Un geste trop rapide ?<br><strong>Le bouton retour annule ton dernier choix.</strong></p></div>
+  </aside>
+</section>
