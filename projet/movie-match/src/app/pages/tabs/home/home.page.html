@@ -14,7 +14,7 @@
   }
 </ion-header>
 <ion-content>
-  <div class="page-intro"><h1>Fais ton cinéma.</h1><p>À gauche, tu passes. À droite, le coup de cœur.</p></div>
+  <div class="page-intro"><h1>Trouve ton prochain coup de cœur.</h1><p>Explore les films du moment et garde ceux qui te ressemblent.</p></div>
   @if (error()) {
     <div class="request-error" role="alert"><p>{{ error() }}</p><button type="button" (click)="retry()">Réessayer</button></div>
   }
@@ -28,14 +28,27 @@
       @else { <p>Aucun film disponible.</p> }
     </div></ion-text>
   } @else if (movies().length > 0) {
-    <app-movie-swipe [movie]="currentMovie()"
-      [poster]="tmdb.poster(currentMovie()?.poster_path ?? '')"
-      [nextPoster]="tmdb.poster(nextMovie()?.poster_path ?? '')"
-      [progress]="(currentMovie() ? deckIndex() + 1 : movies().length) + ' / ' + movies().length"
-      [favorite]="currentMovie() ? isFavorite(currentMovie()!.id) : false"
-      [busy]="saving() || (currentMovie() ? pendingFavorites().has(currentMovie()!.id) : false)"
-      [canRewind]="canRewind()" (selected)="decide($event)" (undo)="rewind()" (restart)="restartDeck()">
-    </app-movie-swipe>
+    <div class="movies-grid">
+      @for (movie of movies(); track movie.id) {
+        <article class="movie-card">
+          <div class="poster-wrapper">
+            <div class="no-poster" aria-hidden="true">🎬</div>
+            @if (movie.poster_path) {
+              <img [src]="tmdb.poster(movie.poster_path)" [alt]="movie.title" loading="lazy" decoding="async">
+            }
+            <button type="button" class="fav-btn" [class.active]="isFavorite(movie.id)"
+              [attr.aria-label]="(isFavorite(movie.id) ? 'Retirer des favoris : ' : 'Ajouter aux favoris : ') + movie.title"
+              [attr.aria-pressed]="isFavorite(movie.id)" [disabled]="pendingFavorites().has(movie.id)"
+              (click)="toggleFavorite(movie)">{{ isFavorite(movie.id) ? '♥' : '♡' }}</button>
+          </div>
+          <div class="movie-info">
+            <div class="movie-title">{{ movie.title }}</div>
+            <div class="movie-meta">⭐ {{ movie.vote_average?.toFixed(1) ?? 'N/A' }}
+              @if (movie.release_date) { · {{ movie.release_date.substring(0, 4) }} }
+            </div>
+          </div>
+        </article>
+      }
+    </div>
   }
-  <span class="sr-only" role="status" aria-live="polite">{{ announcement() }}</span>
 </ion-content>

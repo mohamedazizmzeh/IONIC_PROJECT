@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { Observable, Subscription, map } from 'rxjs';
 import {
   IonHeader, IonToolbar, IonTitle, IonContent, IonSearchbar,
@@ -8,16 +8,13 @@ import { TmdbService, TmdbMovie } from '../../../core/services/tmdb.service';
 import { UserService } from '../../../core/services/user.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { MovieService } from '../../../core/services/movie.service';
-import { MovieSwipeComponent } from './movie-swipe.component';
-
-interface SwipeChoice { index: number; movieId: number; addedFavorite: boolean }
 
 @Component({
   selector: 'app-home',
   standalone: true,
   imports: [
     IonHeader, IonToolbar, IonTitle, IonContent,
-    IonSearchbar, IonSpinner, IonText, MovieSwipeComponent
+    IonSearchbar, IonSpinner, IonText
   ],
   templateUrl: './home.page.html',
   styleUrls: ['./home.page.scss']
@@ -36,17 +33,6 @@ export class HomePage implements OnInit, OnDestroy {
   query = signal('');
   catalogCount = signal(0);
   error = signal('');
-  deckIndex = signal(0);
-  saving = signal(false);
-  announcement = signal('');
-  currentMovie = computed<TmdbMovie | undefined>(() => this.movies()[this.deckIndex()]);
-  nextMovie = computed<TmdbMovie | undefined>(() => this.movies()[this.deckIndex() + 1]);
-  private history = signal<SwipeChoice[]>([]);
-  private deckVersion = 0;
-  canRewind = computed(() => {
-    const last = this.history().at(-1);
-    return !!last && !this.saving() && !this.loading() && !this.pendingFavorites().has(last.movieId);
-  });
   private movieRequest?: Subscription;
   private countRequest?: Subscription;
 
@@ -62,7 +48,6 @@ export class HomePage implements OnInit, OnDestroy {
 
   private loadMovies(source: Observable<TmdbMovie[]>) {
     this.movieRequest?.unsubscribe();
-    this.resetDeck();
     this.movies.set([]);
     this.loading.set(true);
     this.error.set('');
@@ -139,70 +124,15 @@ export class HomePage implements OnInit, OnDestroy {
     return !!user && user.favorites.includes(id);
   }
 
-  decide(direction: 'like' | 'pass') {
-    const movie = this.currentMovie();
-    if (!movie || this.loading() || this.saving() || this.pendingFavorites().has(movie.id)) return;
-    if (direction === 'like' && !this.auth.currentUser()) {
-      this.error.set('Connecte-toi pour enregistrer tes favoris.');
-      return;
-    }
-    const entry: SwipeChoice = {
-      index: this.deckIndex(), movieId: movie.id,
-      addedFavorite: direction === 'like' && !this.isFavorite(movie.id)
-    };
+  toggleFavorite(movie: TmdbMovie) {
+    const user = this.auth.currentUser();
+    if (!user || this.pendingFavorites().has(movie.id)) return;
     this.error.set('');
-    this.history.update(history => [...history, entry]);
-    this.deckIndex.update(index => index + 1);
-    this.announcement.set(direction === 'like' ? `${movie.title} ajouté aux favoris.` : `${movie.title} passé.`);
-    if (!entry.addedFavorite) return;
-    const version = this.deckVersion;
-    this.saving.set(true);
-    this.users.addFavorite(movie.id).subscribe({
-      complete: () => this.saving.set(false),
-      error: () => {
-        if (version === this.deckVersion) {
-          this.history.update(history => history.filter(choice => choice !== entry));
-          this.deckIndex.set(entry.index);
-          this.error.set('Le favori n’a pas pu être enregistré. Le film est revenu pour réessayer.');
-          this.announcement.set('Favori non enregistré.');
-        }
-        this.saving.set(false);
-      }
+    const request = user.favorites.includes(movie.id)
+      ? this.users.removeFavorite(movie.id)
+      : this.users.addFavorite(movie.id);
+    request.subscribe({
+      error: () => this.error.set('La modification des favoris a échoué. Ton choix précédent a été conservé. Réessaie.')
     });
-  }
-
-  rewind() {
-    if (!this.canRewind()) return;
-    const entry = this.history().at(-1)!;
-    this.history.update(history => history.slice(0, -1));
-    this.deckIndex.set(entry.index);
-    this.error.set('');
-    this.announcement.set('Dernier choix annulé.');
-    if (!entry.addedFavorite) return;
-    const version = this.deckVersion;
-    this.saving.set(true);
-    this.users.removeFavorite(entry.movieId).subscribe({
-      complete: () => this.saving.set(false),
-      error: () => {
-        if (version === this.deckVersion) {
-          this.history.update(history => [...history, entry]);
-          this.deckIndex.set(entry.index + 1);
-          this.error.set('Impossible d’annuler ce favori. Réessaie avec le bouton retour.');
-        }
-        this.saving.set(false);
-      }
-    });
-  }
-
-  restartDeck() {
-    if (this.saving()) return;
-    this.resetDeck();
-  }
-
-  private resetDeck() {
-    ++this.deckVersion;
-    this.deckIndex.set(0);
-    this.history.set([]);
-    this.announcement.set('');
   }
 }

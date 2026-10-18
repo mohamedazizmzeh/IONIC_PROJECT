@@ -70,96 +70,35 @@ describe('HomePage', () => {
     expect(fixture.nativeElement.querySelector('[role=alert]')).not.toBeNull();
   });
 
-  function showDeck() {
+  it('shows a movie grid with individual heart buttons', () => {
     popular.next([{ id: 1, title: 'First movie' }, { id: 2, title: 'Second movie' }]);
-  }
-
-  it('passes a film without changing favorites and can rewind the pass', () => {
-    showDeck();
-    component.decide('pass');
-    expect(component.currentMovie()?.id).toBe(2);
-    expect(addFavorite).not.toHaveBeenCalled();
-    component.rewind();
-    expect(component.currentMovie()?.id).toBe(1);
-    expect(removeFavorite).not.toHaveBeenCalled();
-  });
-
-  it('likes a film and rewinds both the card and its new favorite', () => {
-    showDeck();
-    component.decide('like');
+    fixture.detectChanges();
+    const buttons = fixture.nativeElement.querySelectorAll('.fav-btn');
+    expect(fixture.nativeElement.querySelector('.movies-grid')).not.toBeNull();
+    expect(buttons.length).toBe(2);
+    expect(fixture.nativeElement.querySelector('app-movie-swipe')).toBeNull();
+    buttons[0].click();
     expect(addFavorite).toHaveBeenCalledWith(1);
-    expect(component.currentMovie()?.id).toBe(2);
-    expect(component.canRewind()).toBe(false);
-    favoriteResponse.next({ favorites: [1] });
-    favoriteResponse.complete();
-    component.rewind();
-    expect(removeFavorite).toHaveBeenCalledWith(1);
-    expect(component.currentMovie()?.id).toBe(1);
   });
 
-  it('preserves a favorite that existed before the swipe', () => {
+  it('removes a favorite using its heart button', () => {
     currentUser.update(user => user && ({ ...user, favorites: [1] }));
-    showDeck();
-    component.decide('like');
-    component.rewind();
-    expect(addFavorite).not.toHaveBeenCalled();
-    expect(removeFavorite).not.toHaveBeenCalled();
-    expect(component.currentMovie()?.id).toBe(1);
+    popular.next([{ id: 1, title: 'First movie' }]);
+    fixture.detectChanges();
+    const button = fixture.nativeElement.querySelector('.fav-btn') as HTMLButtonElement;
+    expect(button?.getAttribute('aria-pressed')).toBe('true');
+    button.click();
+    expect(removeFavorite).toHaveBeenCalledWith(1);
   });
 
-  it('restores a film if saving its like fails', () => {
-    showDeck();
-    component.decide('like');
+  it('shows a visible error if saving a favorite fails', () => {
+    popular.next([{ id: 1, title: 'First movie' }]);
+    fixture.detectChanges();
+    const button = fixture.nativeElement.querySelector('.fav-btn') as HTMLButtonElement;
+    expect(button).not.toBeNull();
+    button.click();
     favoriteResponse.error(new Error('Offline'));
-    expect(component.currentMovie()?.id).toBe(1);
-    expect(component.canRewind()).toBe(false);
-    expect(component.error()).not.toBe('');
-  });
-
-  it('keeps a saved like and its history if removing it during rewind fails', () => {
-    showDeck();
-    component.decide('like');
-    favoriteResponse.next({ favorites: [1] });
-    favoriteResponse.complete();
-    const undoResponse = new Subject<{ favorites: number[] }>();
-    removeFavorite.mockReturnValue(undoResponse);
-    component.rewind();
-    undoResponse.error(new Error('Offline'));
-    expect(component.currentMovie()?.id).toBe(2);
-    expect(component.canRewind()).toBe(true);
-    expect(component.error()).not.toBe('');
-  });
-
-  it('blocks repeated choices until the previous save completes', () => {
-    showDeck();
-    component.decide('like');
-    component.decide('like');
-    component.decide('pass');
-    component.rewind();
-    expect(addFavorite).toHaveBeenCalledTimes(1);
-    expect(component.currentMovie()?.id).toBe(2);
-  });
-
-  it('does not restore an old card into a different search after a failed save', () => {
-    showDeck();
-    component.decide('like');
-    component.onSearch({ detail: { value: 'new' } });
-    searches.get('new')!.next([{ id: 3, title: 'New movie' }]);
-    favoriteResponse.error(new Error('Offline'));
-    expect(component.currentMovie()?.id).toBe(3);
-    expect(component.canRewind()).toBe(false);
-  });
-
-  it('can rewind after the final card and clears history for a new search', () => {
-    showDeck();
-    component.decide('pass');
-    component.decide('pass');
-    expect(component.currentMovie()).toBeUndefined();
-    component.rewind();
-    expect(component.currentMovie()?.id).toBe(2);
-    component.onSearch({ detail: { value: 'new' } });
-    searches.get('new')!.next([{ id: 3, title: 'New movie' }]);
-    expect(component.currentMovie()?.id).toBe(3);
-    expect(component.canRewind()).toBe(false);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('[role=alert]')).not.toBeNull();
   });
 });

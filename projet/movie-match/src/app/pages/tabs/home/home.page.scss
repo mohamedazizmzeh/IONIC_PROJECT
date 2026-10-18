@@ -3,7 +3,3 @@
 .tab { min-height: 48px; display: flex; align-items: center; gap: 8px; background: transparent; border: 0; border-bottom: 2px solid transparent; color: var(--mm-muted); font-size: 13px; font-weight: 600; cursor: pointer; }
 .tab.active { color: var(--mm-accent); border-bottom-color: var(--mm-accent); }
 .count { background: #ece5db; color: var(--mm-ink); font-size: 10px; border-radius: 4px; padding: 3px 6px; }
-.page-intro { padding-top: 24px; }
-.page-intro h1 { font-size: 32px; }
-.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-@media (max-width: 760px) { ion-toolbar { --min-height: 56px; } .page-intro { padding: 16px 28px 0; } .page-intro h1 { font-size: 26px; margin-bottom: 8px; } .page-intro p { font-size: 12px; } }
