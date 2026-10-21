@@ -1,4 +1,10 @@
 @use "./theme/auth";
+@use "./theme/movies";
+@use "./pages/Tabs";
+@use "./pages/Home";
+@use "./pages/Admin";
+@use "./pages/Matches";
+@use "./pages/Profile";
 
 /*
  * App Global CSS
@@ -12,20 +18,20 @@
  */
 
 /* Core CSS required for Ionic components to work properly */
-@import "@ionic/angular/css/core.css";
+@import "@ionic/react/css/core.css";
 
 /* Basic CSS for apps built with Ionic */
-@import "@ionic/angular/css/normalize.css";
-@import "@ionic/angular/css/structure.css";
-@import "@ionic/angular/css/typography.css";
-@import "@ionic/angular/css/display.css";
+@import "@ionic/react/css/normalize.css";
+@import "@ionic/react/css/structure.css";
+@import "@ionic/react/css/typography.css";
+@import "@ionic/react/css/display.css";
 
 /* Optional CSS utils that can be commented out */
-@import "@ionic/angular/css/padding.css";
-@import "@ionic/angular/css/float-elements.css";
-@import "@ionic/angular/css/text-alignment.css";
-@import "@ionic/angular/css/text-transformation.css";
-@import "@ionic/angular/css/flex-utils.css";
+@import "@ionic/react/css/padding.css";
+@import "@ionic/react/css/float-elements.css";
+@import "@ionic/react/css/text-alignment.css";
+@import "@ionic/react/css/text-transformation.css";
+@import "@ionic/react/css/flex-utils.css";
 
 /**
  * Ionic Dark Mode
@@ -34,8 +40,8 @@
  * https://ionicframework.com/docs/theming/dark-mode
  */
 
-/* @import "@ionic/angular/css/palettes/dark.always.css"; */
-/* @import "@ionic/angular/css/palettes/dark.class.css"; */
+/* @import "@ionic/react/css/palettes/dark.always.css"; */
+/* @import "@ionic/react/css/palettes/dark.class.css"; */
 
 * { box-sizing: border-box; }
 button, a, input { -webkit-tap-highlight-color: transparent; }

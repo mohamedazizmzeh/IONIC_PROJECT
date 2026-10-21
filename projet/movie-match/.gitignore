@@ -4,7 +4,6 @@
 # ============ BUILD ============
 /dist
 /www
-/.angular
 
 # ============ LOGS ============
 *.log
@@ -33,3 +32,5 @@ Thumbs.db
 
 # ============ TESTS ============
 /coverage
+/output/
+/.playwright-cli/

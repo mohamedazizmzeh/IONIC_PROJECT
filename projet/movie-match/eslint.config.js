@@ -1,31 +1,26 @@
-// @ts-check
-const tseslint = require("typescript-eslint");
-const angular = require("angular-eslint");
+import js from '@eslint/js';
+import tseslint from 'typescript-eslint';
+import hooks from 'eslint-plugin-react-hooks';
+import globals from 'globals';
 
-module.exports = tseslint.config(
+export default tseslint.config(
+  { ignores: ['www/**', 'node_modules/**'] },
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
   {
-    files: ["**/*.ts"],
-    ignores: ["projects/**/*"],
-    extends: [...angular.configs.tsRecommended],
-    processor: angular.processInlineTemplates,
-    rules: {
-      "@angular-eslint/component-class-suffix": [
-        "error",
-        { suffixes: ["Page", "Component"] },
-      ],
-      "@angular-eslint/component-selector": [
-        "error",
-        { type: "element", prefix: "app", style: "kebab-case" },
-      ],
-      "@angular-eslint/directive-selector": [
-        "error",
-        { type: "attribute", prefix: "app", style: "camelCase" },
-      ],
+    files: ['src/**/*.{ts,tsx}'],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        describe: 'readonly',
+        it: 'readonly',
+        expect: 'readonly',
+        vi: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly'
+      }
     },
-  },
-  {
-    files: ["**/*.html"],
-    extends: [...angular.configs.templateRecommended],
-    rules: {},
+    plugins: { 'react-hooks': hooks },
+    rules: { 'react-hooks/rules-of-hooks': 'error', 'react-hooks/exhaustive-deps': 'error' }
   }
 );

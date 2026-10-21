@@ -1,0 +1,42 @@
+.profile-page {
+
+    .profile-wrap { max-width: 560px; margin: 48px auto; padding: 32px 24px; background: #fffefa; border: 1px solid var(--mm-border); border-radius: 12px; }
+    .btn-admin {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 14px;
+      background: #ebe8dc;
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 16px;
+      transition: background 0.2s;
+    }
+    .btn-admin:hover { background: #e0ab08; }
+    .btn-admin:active { background: #c69907; transform: scale(0.98); }
+
+    .btn-logout {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 14px;
+      background: var(--mm-accent);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 12px;
+      transition: background 0.2s;
+    }
+    .btn-logout:hover { background: #cf3c4f; }
+    .btn-logout:active { background: #b83145; transform: scale(0.98); }
+  
+}
